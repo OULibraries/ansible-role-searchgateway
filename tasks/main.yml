@@ -4,21 +4,54 @@
   git:
     dest: "/srv/searchgateway"
     repo: "https://github.com/OULibraries/searchgateway.git"
+
+- name: Let composer own php code
+  file:
+    path: /srv/searchgateway/
+    owner: composer
+    group: wheel
+    state: directory
     
+- name: Composer install search gatway dependencies 
+  become: yes
+  become_user: composer
+  shell: |
+    scl enable rh-php56 '/opt/php/bin/composer.phar install'
+  args:
+    chdir: /srv/searchgateway
+    creates: /srv/searchgateway/vendor
+
+
 - name: Set default SELinux context for searchgateway files
   command: >
     semanage fcontext -a -t httpd_sys_rw_content_t  "/srv/searchgateway(/.*)?"
-  sudo: yes
+  become: yes
 
 - name: Restore default SELinux context for search gateway files
   command: >
     restorecon -rv /srv/searchgateway
-  sudo: yes
+  become: yes
 
-- name: Add searchgatway config to nginx
+- name: Configure search gateway settings
   template:
-    src: "search.inc.j2"
-    dest: "/etc/nginx/conf.d/search.conf.inc"
+    src: "secrets.php.j2"
+    dest: "/srv/searchgateway/config/secrets.php"
     owner: root
     group: root
     mode: 0644
+
+- name: Configure nginx for search gateway
+  template:
+    src: "search.inc.j2"
+    dest: "/etc/nginx/conf.d/search.vagrant.localdomain.conf.inc"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Restart nginx to load new config
+  service:
+    name: "nginx"
+    state: restarted
+    enabled: yes
+
+    
