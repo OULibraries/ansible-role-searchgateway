@@ -34,7 +34,7 @@
 
 # Setting this to wheel for now, but this probably needs more thought
 - name: Set ownership and perms of search gateway code
-  shell: >
+  shell: |
     chgrp -R wheel /srv/searchgateway
     chmod -R g+rwX /srv/searchgateway
 
