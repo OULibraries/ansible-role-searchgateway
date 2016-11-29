@@ -32,6 +32,12 @@
     restorecon -rv /srv/searchgateway
   become: yes
 
+# Setting this to wheel for now, but this probably needs more thought
+- name: Set ownership and perms of search gateway code
+  shell: >
+    chgrp -R wheel /srv/searchgateway
+    chmod -R g+rwX /srv/searchgateway
+
 - name: Configure search gateway settings
   template:
     src: "secrets.php.j2"
