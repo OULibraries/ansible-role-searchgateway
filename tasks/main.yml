@@ -12,7 +12,7 @@
     group: wheel
     state: directory
     
-- name: Composer install search gatway dependencies 
+- name: Composer install search gateway dependencies 
   become: yes
   become_user: composer
   shell: |
