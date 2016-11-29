@@ -1,0 +1,28 @@
+
+# included in server section
+root                /srv/searchgateway/web;
+
+location / {
+    # try to serve file directly, fallback to front controller
+    try_files $uri /index.php$is_args$args;
+}
+
+# Configure silex front controller
+location ~ ^/index\.php(/|$) {
+    fastcgi_pass 127.0.0.1:9000;
+
+    fastcgi_split_path_info ^(.+\.php)(/.*)$;
+
+    include fastcgi_params;
+
+    add_header X-path "$document_root/$fastcgi_script_name";
+
+    fastcgi_param SCRIPT_FILENAME $document_root/$fastcgi_script_name;	
+    fastcgi_param PATH_INFO       $fastcgi_path_info;			
+    fastcgi_param HTTPS off;
+}
+
+# Return 404 for all other php files
+location ~ \.php$ {
+    return 404;
+}
