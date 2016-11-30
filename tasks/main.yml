@@ -43,8 +43,8 @@
     src: "secrets.php.j2"
     dest: "/srv/searchgateway/config/secrets.php"
     owner: root
-    group: root
-    mode: 0644
+    group: wheel
+    mode: 0664
 
 - name: Configure nginx for search gateway
   template:
