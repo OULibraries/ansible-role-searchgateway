@@ -2,12 +2,12 @@
 # tasks file for OULibraries.searchgateway
 - name: clone searchgateway repo
   git:
-    dest: "/srv/searchgateway"
+    dest: "/srv/searchgateway/src"
     repo: "https://github.com/OULibraries/searchgateway.git"
 
 - name: Let composer own php code
   file:
-    path: /srv/searchgateway/
+    path: /srv/searchgateway/src
     owner: composer
     group: wheel
     state: directory
@@ -18,30 +18,30 @@
   shell: |
     scl enable rh-php56 '/opt/php/bin/composer.phar install'
   args:
-    chdir: /srv/searchgateway
-    creates: /srv/searchgateway/vendor
+    chdir: /srv/searchgateway/src
+    creates: /srv/searchgateway/src/vendor
 
 
 - name: Set default SELinux context for searchgateway files
   command: >
-    semanage fcontext -a -t httpd_sys_rw_content_t  "/srv/searchgateway(/.*)?"
+    semanage fcontext -a -t httpd_sys_rw_content_t  "/srv/searchgateway/src(/.*)?"
   become: yes
 
 - name: Restore default SELinux context for search gateway files
   command: >
-    restorecon -rv /srv/searchgateway
+    restorecon -rv /srv/searchgateway/
   become: yes
 
 # Setting this to wheel for now, but this probably needs more thought
 - name: Set ownership and perms of search gateway code
   shell: |
-    chgrp -R wheel /srv/searchgateway
-    chmod -R g+rwX /srv/searchgateway
+    chgrp -R wheel /srv/searchgateway/src/
+    chmod -R g+rwX /srv/searchgateway/src/
 
 - name: Configure search gateway settings
   template:
     src: "secrets.php.j2"
-    dest: "/srv/searchgateway/config/secrets.php"
+    dest: "/srv/searchgateway/src/config/secrets.php"
     owner: root
     group: wheel
     mode: 0664
@@ -49,7 +49,7 @@
 - name: Configure nginx for search gateway
   template:
     src: "search.inc.j2"
-    dest: "/etc/nginx/conf.d/{{ searchgateway_nginx_stub }}.inc"
+    dest: "/srv/searchgateway/etc/{{ searchgateway_nginx_stub }}.nginx.conf"
     owner: root
     group: root
     mode: 0644
