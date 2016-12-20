@@ -46,6 +46,13 @@
     group: wheel
     mode: 0664
 
+- name: Ensure app etc directory exists
+  file:
+    path: /srv/searchgateway/etc
+    owner: nginx
+    group: nginx
+    state: directory
+
 - name: Configure nginx for search gateway
   template:
     src: "search.inc.j2"
