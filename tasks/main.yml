@@ -2,12 +2,12 @@
 # tasks file for OULibraries.searchgateway
 - name: clone searchgateway repo
   git:
-    dest: "/srv/searchgateway/src"
+    dest: "/srv/{{searchgateway_name}}/src"
     repo: "https://github.com/OULibraries/searchgateway.git"
 
 - name: Let composer own php code
   file:
-    path: /srv/searchgateway/src
+    path: "/srv/{{searchgateway_name}}/src"
     owner: composer
     group: wheel
     state: directory
@@ -18,37 +18,37 @@
   shell: |
     scl enable rh-php56 '/opt/php/bin/composer.phar install'
   args:
-    chdir: /srv/searchgateway/src
-    creates: /srv/searchgateway/src/vendor
+    chdir: /srv/{{searchgateway_name}}/src
+    creates: /srv/{{searchgateway_name}}/src/vendor
 
 
 - name: Set default SELinux context for searchgateway files
   command: >
-    semanage fcontext -a -t httpd_sys_rw_content_t  "/srv/searchgateway/src(/.*)?"
+    semanage fcontext -a -t httpd_sys_rw_content_t  "/srv/{{searchgateway_name}}/src(/.*)?"
   become: yes
 
 - name: Restore default SELinux context for search gateway files
   command: >
-    restorecon -rv /srv/searchgateway/
+    restorecon -rv /srv/{{searchgateway_name}}/
   become: yes
 
 # Setting this to wheel for now, but this probably needs more thought
 - name: Set ownership and perms of search gateway code
   shell: |
-    chgrp -R wheel /srv/searchgateway/src/
-    chmod -R g+rwX /srv/searchgateway/src/
+    chgrp -R wheel /srv/{{searchgateway_name}}/src/
+    chmod -R g+rwX /srv/{{searchgateway_name}}/src/
 
 - name: Configure search gateway settings
   template:
     src: "secrets.php.j2"
-    dest: "/srv/searchgateway/src/config/secrets.php"
+    dest: "/srv/{{searchgateway_name}}/src/config/secrets.php"
     owner: root
     group: wheel
     mode: 0664
 
 - name: Ensure app etc directory exists
   file:
-    path: /srv/searchgateway/etc
+    path: /srv/{{searchgateway_name}}/etc
     owner: nginx
     group: nginx
     state: directory
@@ -56,7 +56,7 @@
 - name: Configure nginx for search gateway
   template:
     src: "search.inc.j2"
-    dest: "/srv/searchgateway/etc/{{ searchgateway_nginx_stub }}.nginx.conf"
+    dest: "/srv/{{searchgateway_name}}/etc/{{ searchgateway_name}}.nginx.conf"
     owner: root
     group: root
     mode: 0644
