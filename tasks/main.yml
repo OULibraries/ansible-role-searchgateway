@@ -21,7 +21,6 @@
     chdir: /srv/{{searchgateway_name}}/src
     creates: /srv/{{searchgateway_name}}/src/vendor
 
-
 - name: Set default SELinux context for searchgateway files
   command: >
     semanage fcontext -a -t httpd_sys_rw_content_t  "/srv/{{searchgateway_name}}/src(/.*)?"
@@ -49,22 +48,20 @@
 - name: Ensure app etc directory exists
   file:
     path: /srv/{{searchgateway_name}}/etc
-    owner: nginx
-    group: nginx
+    owner: root
+    group: root
+    mode: 0755
     state: directory
 
 - name: Configure nginx for search gateway
   template:
     src: "search.inc.j2"
-    dest: "/srv/{{searchgateway_name}}/etc/{{ searchgateway_name}}.nginx.conf"
+    dest: "/srv/{{searchgateway_name}}/etc/nginx.conf"
     owner: root
     group: root
     mode: 0644
 
-- name: Restart nginx to load new config
-  service:
-    name: "nginx"
-    state: restarted
-    enabled: yes
-
-    
+- name: Load nginx config for search gateway if nginx is installed
+  shell: >
+     which nginx && nginx -t && systemctl reload nginx
+  ignore_errors: yes
